@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">GoodSeeingMap</string>
+    <string name="app_name">viewtest</string>
+    <string name="mapbox_access_token">sk.eyJ1Ijoic2tlbnRhMTE0IiwiYSI6ImNsbWMza2t3OTFjMzYzam81M203Zmd3OTcifQ.Iebn53J-EnlAKgtdJxBMSw</string>
 </resources>

@@ -1,4 +1,4 @@
-package net.gdseeing.goodseeingmap;
+package com.example.viewtest;
 
 import org.junit.Test;
 
