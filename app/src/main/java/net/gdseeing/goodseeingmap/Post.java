@@ -1,5 +1,7 @@
-package com.example.viewtest;
+package net.gdseeing.goodseeingmap;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -36,13 +38,12 @@ public class Post extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-        super.onActivityResult(requestCode, resultCode, resultData);
-        if (requestCode == RESULT_PICK_IMAGEFILE && resultCode == RESULT_OK) {
+    public ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result ->  {
+
+        if (result.getResultCode() == RESULT_OK) {
             Uri uri = null;
-            if (resultData != null) {
-                uri = resultData.getData();
+            if (result.getData() != null) {
+                uri = result.getData().getData();
 
                 try {
                     Bitmap bmp = getBitmapFromUri(uri);
@@ -52,7 +53,7 @@ public class Post extends AppCompatActivity {
                 }
             }
         }
-    }
+    });
 
     private Bitmap getBitmapFromUri(Uri uri) throws IOException {
         ParcelFileDescriptor parcelFileDescriptor = getContentResolver().openFileDescriptor(uri, "r");

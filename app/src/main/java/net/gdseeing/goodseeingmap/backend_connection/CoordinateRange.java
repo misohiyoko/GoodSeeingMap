@@ -1,4 +1,4 @@
-package net.gdseeing.goodseeingmap.backend;
+package net.gdseeing.goodseeingmap.backend_connection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

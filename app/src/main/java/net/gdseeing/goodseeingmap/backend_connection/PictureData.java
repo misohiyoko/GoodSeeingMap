@@ -1,4 +1,4 @@
-package net.gdseeing.goodseeingmap.backend;
+package net.gdseeing.goodseeingmap.backend_connection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,7 +10,7 @@ public class PictureData {
     private float longitude;
     private String comment;
     private String url;
-    private String user_id;
+    private String user_id; ///Must be hash
 
     public PictureData(String pict_id, String title,
                        float latitude, float longitude,

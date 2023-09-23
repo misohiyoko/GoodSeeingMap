@@ -1,4 +1,4 @@
-package net.gdseeing.goodseeingmap.backend;
+package net.gdseeing.goodseeingmap.backend_connection;
 
 import android.content.Context;
 import android.util.Log;

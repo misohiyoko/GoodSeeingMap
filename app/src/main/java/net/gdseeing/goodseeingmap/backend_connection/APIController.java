@@ -1,4 +1,4 @@
-package net.gdseeing.goodseeingmap.backend;
+package net.gdseeing.goodseeingmap.backend_connection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -17,20 +17,20 @@ public class APIController {
     OkHttpClient client = new OkHttpClient();
     public final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     public Request pictUploadRequest(PictureData pictureData) throws JsonProcessingException {
-        RequestBody body = RequestBody.create(JSON, pictureData.json());
+        RequestBody body = RequestBody.create( pictureData.json(),JSON);
         return new Request.Builder().url(url).post(body).build();
     }
     public Request pictUpdateRequest(PictureData pictureData) throws JsonProcessingException {
-        RequestBody body = RequestBody.create(JSON, pictureData.json());
+        RequestBody body = RequestBody.create(pictureData.json(),JSON);
         return new Request.Builder().url(url).put(body).build();
     }
     public Request pictDeleteRequest(PictureData pictureData) throws JsonProcessingException {
-        RequestBody body = RequestBody.create(JSON, pictureData.json());
+        RequestBody body = RequestBody.create(pictureData.json(),JSON);
         return new Request.Builder().url(url).delete(body).build();
     }
     public Request pictGetRangeRequest(CoordinateRange coordinateRange) throws JsonProcessingException {
 
-        RequestBody body = RequestBody.create(JSON, coordinateRange.json());
+        RequestBody body = RequestBody.create(coordinateRange.json(),JSON);
         return new Request.Builder().url(url).delete(body).build();
     }
     public void doRequest(Request request, ResponseCallback responseCallback) throws JsonProcessingException {
