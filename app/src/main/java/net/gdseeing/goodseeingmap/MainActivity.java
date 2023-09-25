@@ -1,8 +1,13 @@
 package net.gdseeing.goodseeingmap;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.core.content.ContextCompat;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -28,6 +33,20 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
     public S3Controller s3Controller;
     public APIController apiController;
+
+    private ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    // Permission is granted. Continue the action or workflow in your
+                    // app.
+                } else {
+                    // Explain to the user that the feature is unavailable because the
+                    // feature requires a permission that the user has denied. At the
+                    // same time, respect the user's decision. Don't link to system
+                    // settings in an effort to convince the user to change their
+                    // decision.
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,6 +108,32 @@ public class MainActivity extends AppCompatActivity {
             });
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
+        }
+        if (ContextCompat.checkSelfPermission(
+                getApplicationContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED) {
+            // You can use the API that requires the permission.
+
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            //⑤b 権限が必要な理由・メリットを説明
+            builder.setMessage(R.string.alert_dialog)
+                    .setPositiveButton("Yes", (dialog, id) ->
+                            requestPermissionLauncher.launch(
+                                    Manifest.permission.ACCESS_FINE_LOCATION))
+                    .setNegativeButton("No", (dialog, id) ->
+                            android.os.Process.killProcess(android.os.Process.myPid()));
+            builder.create();
+            builder.show();
+        } else {
+            // You can directly ask for the permission.
+            // The registered ActivityResultCallback gets the result of this request.
+            requestPermissionLauncher.launch(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+
+            );
         }
 
 

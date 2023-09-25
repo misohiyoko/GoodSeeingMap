@@ -1,4 +1,4 @@
-package com.example.viewtest;
+package net.gdseeing.goodseeingmap;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.example.viewtest", appContext.getPackageName());
+        assertEquals("net.gdseeing.goodseeingmap", appContext.getPackageName());
     }
 }

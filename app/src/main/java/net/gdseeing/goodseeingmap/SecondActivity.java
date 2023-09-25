@@ -104,7 +104,7 @@ public class SecondActivity extends AppCompatActivity {
                 locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener);
                 locationComponentPlugin.addOnIndicatorBearingChangedListener(noIndicatorBearingChangedListener);
                 getGestures(mapView).addOnMoveListener(onMoveListener);
-
+                style.setStyleURI("mapbox://styles/mapbox/streets-v12");
                 floatingActionButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
