@@ -20,11 +20,13 @@ public class Post extends AppCompatActivity {
     private static final int RESULT_PICK_IMAGEFILE = 1000;
     private ImageView imageView;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.post);
         imageView = (ImageView) findViewById(R.id.iv_pic);
+
         findViewById(R.id.ib_chooce).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -34,6 +36,12 @@ public class Post extends AppCompatActivity {
                 startActivityForResult(intent, RESULT_PICK_IMAGEFILE);
 
             }
+        });
+        findViewById(R.id.ib_post).setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View v) {
+                    
+                }
         });
 
     }
