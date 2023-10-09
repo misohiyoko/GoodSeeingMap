@@ -33,7 +33,11 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
     public S3Controller s3Controller;
     public APIController apiController;
-
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
     private ActivityResultLauncher<String> requestPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -102,7 +106,32 @@ public class MainActivity extends AppCompatActivity {
 
             );
         }
+        if (ContextCompat.checkSelfPermission(
+                getApplicationContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED) {
+            // You can use the API that requires the permission.
 
+        } else if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            //⑤b 権限が必要な理由・メリットを説明
+            builder.setMessage("It need to read external storage")
+                    .setPositiveButton("Yes", (dialog, id) ->
+                            requestPermissionLauncher.launch(
+                                    Manifest.permission.WRITE_EXTERNAL_STORAGE))
+                    .setNegativeButton("No", (dialog, id) ->
+                            android.os.Process.killProcess(android.os.Process.myPid()));
+            builder.create();
+            builder.show();
+        } else {
+            // You can directly ask for the permission.
+            // The registered ActivityResultCallback gets the result of this request.
+            requestPermissionLauncher.launch(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+
+            );
+        }
 
     }
 

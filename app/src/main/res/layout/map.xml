@@ -31,19 +31,7 @@
             android:src="@drawable/baseline_my_location_24"
             tools:ignore="SpeakableTextPresentCheck" />
 
-        <SearchView
-            android:id="@+id/kensaku"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="-3dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="3dp"
-            android:background="@drawable/rounded_search"
-            android:iconifiedByDefault="false"
-            android:queryHint="検索" />
+
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

@@ -40,7 +40,11 @@ public class S3Controller {
                 public void onStateChanged(int id, TransferState state) {
                     Log.d("AwsSample", "status: "+state);
                     if (state == TransferState.COMPLETED){
-                        stringCallback.onComplete(state.toString());
+                        try {
+                            stringCallback.onComplete(state.toString());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
 
@@ -63,7 +67,11 @@ public class S3Controller {
             public void onStateChanged(int id, TransferState state) {
                 Log.d("AwsSample", "status: "+state);
                 if (state == TransferState.COMPLETED){
-                    stringCallback.onComplete(state.toString());
+                    try {
+                        stringCallback.onComplete(state.toString());
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
 

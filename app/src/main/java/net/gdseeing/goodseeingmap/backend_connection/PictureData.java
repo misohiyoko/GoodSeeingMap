@@ -23,6 +23,9 @@ public class PictureData {
         this.url = url;
         this.user_id = user_id;
     }
+    public PictureData(){
+
+    }
     public String json() throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return objectMapper.writeValueAsString(this);

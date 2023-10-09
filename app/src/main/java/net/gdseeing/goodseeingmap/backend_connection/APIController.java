@@ -29,9 +29,10 @@ public class APIController {
         return new Request.Builder().url(url).delete(body).build();
     }
     public Request pictGetRangeRequest(CoordinateRange coordinateRange) throws JsonProcessingException {
+        String json = coordinateRange.json();
+        RequestBody body = RequestBody.create(json,JSON);
 
-        RequestBody body = RequestBody.create(coordinateRange.json(),JSON);
-        return new Request.Builder().url(url).delete(body).build();
+        return new Request.Builder().url(url+"/postrange").post(body).build();
     }
     public void doRequest(Request request, ResponseCallback responseCallback) throws JsonProcessingException {
 
