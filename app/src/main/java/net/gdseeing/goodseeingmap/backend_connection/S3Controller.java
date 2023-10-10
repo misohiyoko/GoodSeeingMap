@@ -3,6 +3,7 @@ package net.gdseeing.goodseeingmap.backend_connection;
 import android.content.Context;
 import android.util.Log;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferListener;
 import com.amazonaws.mobileconnectors.s3.transferutility.TransferObserver;
@@ -22,8 +23,22 @@ public class S3Controller {
     private String secret = "7/MHxPcI1p3ZYxZwWYp7Gvl+OznyN6D5ThtZMVXG";
     private String bucket = "gsm-pictures-content";
     BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials(key, secret);
-    AmazonS3Client s3Client = new AmazonS3Client(basicAWSCredentials);
+    ClientConfiguration config = new ClientConfiguration();
+
+
+    AmazonS3Client s3Client;
     APIController apiController = new APIController();
+    TransferUtility transferUtility;
+    public S3Controller(Context context){
+        transferUtility = new TransferUtility(s3Client, context.getApplicationContext());
+        config.setMaxConnections(128);
+        config.setSocketTimeout(120000);
+        config.setConnectionTimeout(60000);
+        config.setMaxErrorRetry(3);
+        config.setSocketBufferSizeHints(10240,10240);
+        s3Client = new AmazonS3Client(basicAWSCredentials,config);
+    }
+
     public void upload(Context context,PictureData pictureData, File file, StringCallback stringCallback) throws JsonProcessingException {
         TransferUtility transferUtility = new TransferUtility(s3Client, context.getApplicationContext());
         TransferObserver observer = transferUtility.upload(bucket, pictureData.getPict_id(), file);
@@ -60,7 +75,7 @@ public class S3Controller {
             });
     }
     public void download(Context context,PictureData pictureData, File file, StringCallback stringCallback){
-        TransferUtility transferUtility = new TransferUtility(s3Client, context.getApplicationContext());
+
         TransferObserver observer = transferUtility.download(bucket, pictureData.getPict_id(), file);
         observer.setTransferListener(new TransferListener() {
             @Override

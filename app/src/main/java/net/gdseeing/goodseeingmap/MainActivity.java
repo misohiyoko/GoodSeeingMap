@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.s3Controller = new S3Controller();
+        this.s3Controller = new S3Controller(getApplicationContext());
         this.apiController = new APIController();
         ImageButton buttonSearch = findViewById(R.id.search);
         buttonSearch.setOnClickListener(new View.OnClickListener() {

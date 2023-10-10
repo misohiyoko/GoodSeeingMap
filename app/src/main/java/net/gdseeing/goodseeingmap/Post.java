@@ -38,6 +38,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileDescriptor;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -62,7 +63,7 @@ public class Post extends AppCompatActivity {
         imageView = (ImageView) findViewById(R.id.iv_pic);
         et_place = (EditText) findViewById(R.id.et_place);
         et_input = (EditText) findViewById(R.id.et_input);
-        this.s3Controller = new S3Controller();
+        this.s3Controller = new S3Controller(getApplicationContext());
         this.apiController = new APIController();
         findViewById(R.id.ib_chooce).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,8 +83,12 @@ public class Post extends AppCompatActivity {
                         String uuidString = UUID.randomUUID().toString();
 
                         PictureData pictData = new PictureData(uuidString,et_input.getText().toString(), pict_lat_lng[0],pict_lat_lng[1],"","http://tobeused.com","preRelease");
-                        if(uploadPicture(pictData,set_uri)){
+                        try {
+                            if(uploadPicture(pictData,set_uri)){
 
+                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
                     }
                 }
@@ -137,7 +142,7 @@ public class Post extends AppCompatActivity {
         return image;
     }
     // 画像終わり
-    private Boolean uploadPicture(PictureData pictureData, Uri uri){
+    private Boolean uploadPicture(PictureData pictureData, Uri uri) throws IOException {
         try {
             Request request = apiController.pictUploadRequest(pictureData);
             apiController.doRequest(request, new ResponseCallback() {
@@ -151,8 +156,14 @@ public class Post extends AppCompatActivity {
             Log.e("Error", e.toString());
             return false;
         }
-        String path = getPathFromUri(getApplicationContext(), uri);
-        File uploadFile = new File(path);
+        Bitmap bitmap = getBitmapFromUri(uri);
+        File resizedFile = File.createTempFile(pictureData.getPict_id(), null, getApplicationContext().getCacheDir());
+        FileOutputStream outStream = new FileOutputStream(resizedFile);
+        bitmap = resize(bitmap, 640, 640);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+        outStream.close();
+        bitmap.recycle();
+        File uploadFile = resizedFile;
 
         try {
             s3Controller.upload(getApplicationContext(), pictureData, uploadFile, new StringCallback() {
@@ -230,5 +241,25 @@ public class Post extends AppCompatActivity {
                 cursor.close();
         }
         return null;
+    }
+    private static Bitmap resize(Bitmap image, int maxWidth, int maxHeight) {
+        if (maxHeight > 0 && maxWidth > 0) {
+            int width = image.getWidth();
+            int height = image.getHeight();
+            float ratioBitmap = (float) width / (float) height;
+            float ratioMax = (float) maxWidth / (float) maxHeight;
+
+            int finalWidth = maxWidth;
+            int finalHeight = maxHeight;
+            if (ratioMax > 1) {
+                finalWidth = (int) ((float)maxHeight * ratioBitmap);
+            } else {
+                finalHeight = (int) ((float)maxWidth / ratioBitmap);
+            }
+            image = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true);
+            return image;
+        } else {
+            return image;
+        }
     }
 }
