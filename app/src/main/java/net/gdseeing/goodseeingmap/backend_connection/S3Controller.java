@@ -12,6 +12,8 @@ import com.amazonaws.mobileconnectors.s3.transferutility.TransferUtility;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import org.json.JSONException;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -30,13 +32,16 @@ public class S3Controller {
     APIController apiController = new APIController();
     TransferUtility transferUtility;
     public S3Controller(Context context){
-        transferUtility = new TransferUtility(s3Client, context.getApplicationContext());
         config.setMaxConnections(128);
         config.setSocketTimeout(120000);
         config.setConnectionTimeout(60000);
         config.setMaxErrorRetry(3);
+        config.setMaxConnections(12);
         config.setSocketBufferSizeHints(10240,10240);
         s3Client = new AmazonS3Client(basicAWSCredentials,config);
+
+        transferUtility = new TransferUtility(s3Client, context.getApplicationContext());
+
     }
 
     public void upload(Context context,PictureData pictureData, File file, StringCallback stringCallback) throws JsonProcessingException {
@@ -58,6 +63,8 @@ public class S3Controller {
                         try {
                             stringCallback.onComplete(state.toString());
                         } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        } catch (JSONException e) {
                             throw new RuntimeException(e);
                         }
                     }
@@ -85,6 +92,8 @@ public class S3Controller {
                     try {
                         stringCallback.onComplete(state.toString());
                     } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    } catch (JSONException e) {
                         throw new RuntimeException(e);
                     }
                 }

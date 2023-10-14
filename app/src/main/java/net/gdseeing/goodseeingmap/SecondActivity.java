@@ -19,16 +19,22 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.mapbox.android.gestures.MoveGestureDetector;
 
+import com.mapbox.geojson.BoundingBox;
 import com.mapbox.geojson.Point;
 import com.mapbox.maps.CameraOptions;
 
@@ -36,9 +42,12 @@ import com.mapbox.maps.MapView;
 import com.mapbox.maps.MapboxMap;
 import com.mapbox.maps.Style;
 
+import com.mapbox.maps.ViewAnnotationOptions;
 import com.mapbox.maps.plugin.LocationPuck2D;
 import com.mapbox.maps.plugin.annotation.AnnotationConfig;
 import com.mapbox.maps.plugin.annotation.AnnotationPluginImplKt;
+import com.mapbox.maps.plugin.annotation.generated.OnPointAnnotationClickListener;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotation;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManagerKt;
 import com.mapbox.maps.plugin.gestures.OnMoveListener;
@@ -48,6 +57,7 @@ import com.mapbox.maps.plugin.locationcomponent.OnIndicatorPositionChangedListen
 import com.mapbox.maps.plugin.annotation.AnnotationPlugin;
 import com.mapbox.maps.viewannotation.ViewAnnotationManager;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
+import com.mapbox.maps.viewannotation.ViewAnnotationOptionsKtxKt;
 
 
 import net.gdseeing.goodseeingmap.backend_connection.APIController;
@@ -57,6 +67,9 @@ import net.gdseeing.goodseeingmap.backend_connection.ResponseCallback;
 import net.gdseeing.goodseeingmap.backend_connection.S3Controller;
 import net.gdseeing.goodseeingmap.backend_connection.StringCallback;
 import net.gdseeing.goodseeingmap.databinding.MapBinding;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -113,8 +126,8 @@ public class SecondActivity extends AppCompatActivity {
         public void onMoveEnd(@NonNull MoveGestureDetector moveGestureDetector) {
             getLocationComponent(mapView).removeOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener);
             getLocationComponent(mapView).removeOnIndicatorBearingChangedListener(noIndicatorBearingChangedListener);
-            getGestures(mapView).removeOnMoveListener(onMoveListener);
             floatingActionButton.show();
+
         }
 
         @Override
@@ -124,6 +137,7 @@ public class SecondActivity extends AppCompatActivity {
 
         @Override
         public boolean onMove(@NonNull MoveGestureDetector moveGestureDetector) {
+
             return false;
         }
     };
@@ -159,7 +173,15 @@ public class SecondActivity extends AppCompatActivity {
             }
         });
 
-
+        Button buttonPost = findViewById(R.id.post);
+        buttonPost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // SecondActivity に遷移する Intent を作成
+                Intent intent = new Intent(net.gdseeing.goodseeingmap.SecondActivity.this, Post.class);
+                startActivity(intent);
+            }
+        });
         mapView.getMapboxMap().loadStyleUri(Style.SATELLITE, new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
@@ -172,7 +194,6 @@ public class SecondActivity extends AppCompatActivity {
                 locationComponentPlugin.addOnIndicatorPositionChangedListener(onIndicatorPositionChangedListener);
                 locationComponentPlugin.addOnIndicatorBearingChangedListener(noIndicatorBearingChangedListener);
                 getGestures(mapView).addOnMoveListener(onMoveListener);
-
                 floatingActionButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -202,14 +223,15 @@ public class SecondActivity extends AppCompatActivity {
                 @Override
                 public void onComplete(Response response) throws IOException {
                     AnnotationPlugin annotationPlugin = AnnotationPluginImplKt.getAnnotations(mapView);
+
                     String  responseBody = mapper.readTree(response.body().string()).get("body").textValue();
                     List<PictureData> pictureDataList = mapper.readValue(responseBody, new TypeReference<List<PictureData>>(){});
                     for (PictureData pict : pictureDataList){
                         File file = new File( getApplicationContext().getCacheDir(), pict.getPict_id());
-                        if(true){
+                        if(!file.exists()){
                             s3Controller.download(getApplicationContext(), pict, file, new StringCallback() {
                                 @Override
-                                public void onComplete(String str) throws IOException {
+                                public void onComplete(String str) throws IOException, JSONException {
                                     StringCallback.super.onComplete(str);
 
                                     putPicturePin(pict, file, annotationPlugin);
@@ -223,7 +245,7 @@ public class SecondActivity extends AppCompatActivity {
                                 public void run() {
                                     try {
                                         putPicturePin(pict, file, annotationPlugin);
-                                    } catch (IOException e) {
+                                    } catch (IOException | JSONException e) {
                                         throw new RuntimeException(e);
                                     }
                                 }
@@ -245,14 +267,38 @@ public class SecondActivity extends AppCompatActivity {
         return 0;
     }
 
-    private void putPicturePin(PictureData pict, File finalFile, AnnotationPlugin annotationPlugin) throws IOException {
+    private void putPicturePin(PictureData pict, File finalFile, AnnotationPlugin annotationPlugin) throws IOException, JSONException {
         Point point = Point.fromLngLat(pict.getLongitude(), pict.getLatitude());
         Bitmap bitmap = getBitmapFromFile(finalFile);
         Bitmap bitmapIcon = resize(bitmap, 200, 200);
 
         PointAnnotationOptions pointAnnotationOptions = new PointAnnotationOptions().withPoint(point).withIconImage(bitmapIcon);
+
+
         PointAnnotationManager pointAnnotationManager = PointAnnotationManagerKt.createPointAnnotationManager(annotationPlugin, new AnnotationConfig());
-        pointAnnotationManager.create(pointAnnotationOptions);
+
+        pointAnnotationManager.addClickListener(new OnPointAnnotationClickListener() {
+            @Override
+            public boolean onAnnotationClick(@NonNull PointAnnotation pointAnnotation) {
+
+                Gson gson = new Gson();
+                JsonElement data = pointAnnotation.getData();
+                assert data != null;
+                JsonObject object = (JsonObject)data;
+                PictureData pictureData = gson.fromJson(data, PictureData.class);
+                try {
+                    PicturePopupFragment.newInstance(pictureData).show(getSupportFragmentManager(), PicturePopupFragment.class.getSimpleName());
+                } catch (JsonProcessingException e) {
+                    throw new RuntimeException(e);
+                }
+                return true;
+
+            }
+        });
+        Gson gson = new Gson();
+        JsonElement jsonElement = gson.toJsonTree(pict);
+
+        pointAnnotationManager.create(pointAnnotationOptions).setData(jsonElement);
         bitmap.recycle();
         bitmapIcon.recycle();
     }
